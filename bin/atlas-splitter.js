@@ -36,14 +36,14 @@ program
         const TextureAtlasImage = await Jimp.read(ImageData);
 
         for (const SubTexture of TextureAtlas.SubTexture) {
-            TextureAtlasImage.clone()
-                .crop(
-                    parseInt(SubTexture.$x),
-                    parseInt(SubTexture.$y),
-                    parseInt(SubTexture.$width),
-                    parseInt(SubTexture.$height)
-                )
-                .write(
+            const croppedImage = TextureAtlasImage.clone().crop(
+                parseInt(SubTexture.$x),
+                parseInt(SubTexture.$y),
+                parseInt(SubTexture.$width),
+                parseInt(SubTexture.$height)
+            );
+            if (!SubTexture.$frameX) {
+                croppedImage.write(
                     join(
                         TextureAtlasPath,
                         "../",
@@ -51,6 +51,26 @@ program
                         SubTexture.$name + parse(TextureAtlas.$imagePath).ext
                     )
                 );
+            } else {
+                const framedImage = new Jimp(
+                    SubTexture.$frameWidth,
+                    SubTexture.$frameHeight,
+                    0x0
+                );
+                framedImage.composite(
+                    croppedImage,
+                    -SubTexture.$frameX,
+                    -SubTexture.$frameY
+                );
+                framedImage.write(
+                    join(
+                        TextureAtlasPath,
+                        "../",
+                        parse(TextureAtlas.$imagePath).name,
+                        SubTexture.$name + parse(TextureAtlas.$imagePath).ext
+                    )
+                );
+            }
         }
     });
 
